@@ -17,12 +17,12 @@ namespace UniversityRemusLuht.Controllers
         {
             var vm = new InstructorIndexData();
             vm.Instructors = await _context.Instructors
-                .Include(i => i.OfficeAssignments)
-                .Include(i => i.CourseAssignments)
+                .Include(i => i.OfficeAssignment)
+                .Include(i => i.CourseAssignment)
                 .ThenInclude(i => i.Course)
                 .ThenInclude(i => i.Enrollments)
                 .ThenInclude(i => i.Student)
-                .Include(i => i.CourseAssignments)
+                .Include(i => i.CourseAssignment)
                 .ThenInclude(i => i.Course)
                 .ThenInclude(i => i.Department)
                 .AsNoTracking()
@@ -33,7 +33,7 @@ namespace UniversityRemusLuht.Controllers
                 ViewData["InstructorID"] = id.Value;
                 Instructor instructor = vm.Instructors
                     .Where(i => i.ID == id.Value).Single();
-                vm.Courses = instructor.CourseAssignments
+                vm.Courses = instructor.CourseAssignment
                     .Select(i => i.Course);
             }
             if (courseId != null)

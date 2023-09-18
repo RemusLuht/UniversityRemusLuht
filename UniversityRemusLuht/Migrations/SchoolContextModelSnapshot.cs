@@ -250,7 +250,7 @@ namespace UniversityRemusLuht.Migrations
             modelBuilder.Entity("UniversityRemusLuht.Models.OfficeAssignment", b =>
                 {
                     b.HasOne("UniversityRemusLuht.Models.Instructor", "Instructor")
-                        .WithOne("OfficeAssignments")
+                        .WithOne("OfficeAssignment")
                         .HasForeignKey("UniversityRemusLuht.Models.OfficeAssignment", "InstructorID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -272,7 +272,7 @@ namespace UniversityRemusLuht.Migrations
                 {
                     b.Navigation("CourseAssignments");
 
-                    b.Navigation("OfficeAssignments")
+                    b.Navigation("OfficeAssignment")
                         .IsRequired();
                 });
 
