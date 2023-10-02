@@ -13,13 +13,14 @@ namespace UniversityRemusLuht.Controllers
         {
             _context = context;
         }
-        // get index
+
+        //get index
         public async Task<IActionResult> Index()
         {
             var schoolContext = _context.Departments.Include(d => d.Administrator);
             return View(await schoolContext.ToListAsync());
         }
-        // get details
+        //get details
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -38,27 +39,33 @@ namespace UniversityRemusLuht.Controllers
             }
             return View(department);
         }
-        // get create
-        public IActionResult Create() 
+
+        //get create
+        public IActionResult Create()
         {
             ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName");
             return View();
         }
-        // post create
+
+        //post create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DepartmentID,Name,Budget,StartDate,RowVersion,InstructorID")] Department department)
+        public async Task<IActionResult> Create([Bind("Name,Budget,StartDate,RowVersion,InstructorID")] Department department)
         {
-            if (ModelState.IsValid) 
+            ModelState.Remove("Courses");
+            ModelState.Remove("Administrator");
+            if (ModelState.IsValid)
             {
                 _context.Add(department);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName", department.InstructorID);
             return View(department);
         }
-        // get edit
+
+        //get edit
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -77,18 +84,24 @@ namespace UniversityRemusLuht.Controllers
             ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName", department.InstructorID);
             return View(department);
         }
-        // post edit
+
+        //post edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, byte[] rowVersion)
+        public async Task<IActionResult> Edit(int id, byte[] rowVersion)
         {
+            ModelState.Remove("Courses");
+            ModelState.Remove("Administrator");
+            ModelState.Remove("RowVersion");
             if (id == null)
             {
                 return NotFound();
             }
+
             var departmentToUpdate = await _context.Departments
                 .Include(i => i.Administrator)
-                .FirstOrDefaultAsync (m => m.DepartmentID == id);
+                .FirstOrDefaultAsync(m => m.DepartmentID == id);
+
             if (departmentToUpdate == null)
             {
                 Department deletedDepartment = new Department();
@@ -100,7 +113,8 @@ namespace UniversityRemusLuht.Controllers
 
             _context.Entry(departmentToUpdate).Property("RowVersion").OriginalValue = rowVersion;
 
-            if (await TryUpdateModelAsync<Department>(departmentToUpdate, "", s => s.Name, s => s.StartDate, s => s.Budget, s => s.InstructorID)) 
+            var tryUpdate = await TryUpdateModelAsync<Department>(departmentToUpdate, "", s => s.Name, s => s.StartDate, s => s.Budget, s => s.InstructorID);
+            if (tryUpdate)
             {
                 try
                 {
@@ -112,11 +126,11 @@ namespace UniversityRemusLuht.Controllers
                     var exceptionEntry = ex.Entries.Single();
                     var clientValues = (Department)exceptionEntry.Entity;
                     var databaseEntry = exceptionEntry.GetDatabaseValues();
-                    if (databaseEntry == null) 
+                    if (databaseEntry == null)
                     {
                         ModelState.AddModelError(string.Empty, "unable to save changes. The department was deleted by another user.");
                     }
-                    else 
+                    else
                     {
                         var databaseValues = (Department)databaseEntry.ToObject();
 
@@ -138,7 +152,7 @@ namespace UniversityRemusLuht.Controllers
                             ModelState.AddModelError("InstructorID", $"Current value: {databaseValues.InstructorID}");
                         }
                         ModelState.AddModelError(string.Empty, "The record you attempted to edit "
-                            + "was modified by another user after you got the original error value. The "
+                            + "was modified by another user after you got the original value. The "
                             + "edit operation was cancelled and the current values in the database "
                             + "have been displayed. If you still want to edit this record. Click "
                             + "the Save button again. Otherwise click the Back to List hyperlink.");
@@ -150,7 +164,8 @@ namespace UniversityRemusLuht.Controllers
             ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName", departmentToUpdate.InstructorID);
             return View(departmentToUpdate);
         }
-        // get delete
+
+        //get delete
         public async Task<IActionResult> Delete(int? id, bool? concurrencyError)
         {
             if (id == null)
@@ -162,6 +177,7 @@ namespace UniversityRemusLuht.Controllers
                 .Include(d => d.Administrator)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.DepartmentID == id);
+
             if (department == null)
             {
                 if (concurrencyError.GetValueOrDefault())
@@ -170,17 +186,19 @@ namespace UniversityRemusLuht.Controllers
                 }
                 return NotFound();
             }
+
             if (concurrencyError.GetValueOrDefault())
             {
                 ViewData["ConcurrencyErrorMessage"] = "The record you attempted to delete "
                             + "was modified by another user after you got the original values. The "
                             + "delete operation was cancelled and the current values in the database "
-                            + "have been displayed. If you still want to edit this record. Click "
+                            + "have been displayed. If you still want to delete this record. Click "
                             + "the Delete button again. Otherwise click the Back to List hyperlink.";
             }
             return View(department);
         }
-        // post delete
+
+        //post delete
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Department department)
@@ -196,7 +214,7 @@ namespace UniversityRemusLuht.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                return RedirectToAction(nameof(Delete), new {concurrencyError = true, id = department.DepartmentID});
+                return RedirectToAction(nameof(Delete), new { concurrencyError = true, id = department.DepartmentID });
             }
         }
     }

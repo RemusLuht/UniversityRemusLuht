@@ -1,4 +1,6 @@
 ﻿using UniversityRemusLuht.Models;
+using UniversityRemusLuht.Data;
+using UniversityRemusLuht.Models;
 
 namespace UniversityRemusLuht.Data
 {
@@ -6,7 +8,7 @@ namespace UniversityRemusLuht.Data
     {
         public static void Initialize(SchoolContext context)
         {
-            context.Database.EnsureCreated();
+            //context.Database.EnsureCreated();
 
             if (context.Students.Any())
             {
@@ -22,26 +24,37 @@ namespace UniversityRemusLuht.Data
                 new Student() {FirstName="Kregor",LastName="Latt",EnrollmentDate=DateTime.Parse("2021-09-01")},
                 new Student() {FirstName="Joonas",LastName="Õispuu",EnrollmentDate=DateTime.Parse("2021-09-01")}
             };
-            //context.Students.AddRange(students);
-            foreach (Student s in students)
-            {
-                context.Students.Add(s);
-            }
+            context.Students.AddRange(students);
+            //foreach (Student s in students)
+            //{
+            //    context.Students.Add(s);
+            //}
             context.SaveChanges();
 
+
+            //if (context.Instructors.Any())
+            //{
+            //    return;
+            //}
             var instructors = new Instructor[]
             {
-                new Instructor {FirstName = "Jõulu", LastName = "Vana", HireDate = DateTime.Parse("1995-05-11")},
-                new Instructor {FirstName = "Rootsi", LastName = "Kuningas", HireDate = DateTime.Parse("1995-02-11")},
-                new Instructor {FirstName = "Balta", LastName = "Parm", HireDate = DateTime.Parse("2005-03-11")},
+                new Instructor {FirstName = "Jõulu", LastName = "Vana", HireDate = DateTime.Parse("1995-03-11")},
+                new Instructor {FirstName = "Rootsi", LastName = "Kuningas", HireDate = DateTime.Parse("1995-03-11")},
+                new Instructor {FirstName = "Balta", LastName = "Parm", HireDate = DateTime.Parse("1995-03-11")},
                 new Instructor {FirstName = "Kinder", LastName = "Suprise", HireDate = DateTime.Parse("1995-03-11")},
             };
-            foreach (Instructor i in instructors)
-            {
-                context.Instructors.Add(i);
-            }
+            //foreach (Instructor i in instructors)
+            //{
+            //    context.Instructors.Add(i);
+            //}
+            context.Instructors.AddRange(instructors);
             context.SaveChanges();
 
+
+            //if (context.Departments.Any())
+            //{
+            //    return;
+            //}
             var departments = new Department[]
             {
                 new Department
@@ -73,10 +86,7 @@ namespace UniversityRemusLuht.Data
                     InstructorID = instructors.Single(i => i.LastName == "Suprise").ID
                 },
             };
-            foreach (Department d in departments)
-            {
-                context.Departments.Add(d);
-            }
+            context.Departments.AddRange(departments);
             context.SaveChanges();
 
             var courses = new Course[]
@@ -87,11 +97,14 @@ namespace UniversityRemusLuht.Data
                 new Course() {CourseID=6666,Title="Testimine",Credits=160},
                 new Course() {CourseID=1234,Title="Riigikaitse",Credits=160}
             };
+            context.Courses.AddRange(courses);
 
-            foreach (Course c in courses)
+            /*
+             foreach (var course in courses)
             {
-                context.Courses.Add(c);
+                context.Add(course);
             }
+             */
             context.SaveChanges();
 
             var officeAssignments = new OfficeAssignment[]
@@ -112,10 +125,7 @@ namespace UniversityRemusLuht.Data
                     Location = "Kaubik kooli ees",
                 }
             };
-            foreach (OfficeAssignment o in officeAssignments)
-            {
-                context.OfficeAssignments.Add(o);
-            }
+            context.OfficeAssignments.AddRange(officeAssignments);
             context.SaveChanges();
 
             var courseInstructors = new CourseAssignment[]
@@ -156,11 +166,9 @@ namespace UniversityRemusLuht.Data
                     InstructorID = instructors.Single(i => i.LastName == "Suprise").ID
                 },
             };
-            foreach (CourseAssignment ci in courseInstructors)
-            {
-                context.CourseAssignments.Add(ci);
-            }
+            context.CourseAssignments.AddRange(courseInstructors);
             context.SaveChanges();
+
 
             var enrollments = new Enrollment[]
             {
@@ -182,11 +190,15 @@ namespace UniversityRemusLuht.Data
             };
             foreach (Enrollment e in enrollments)
             {
-                context.Enrollments.Add(e);
+                var enrollmentInDatabase = context.Enrollments.Where(
+                    s => s.StudentID == e.StudentID &&
+                    s.CourseID == e.CourseID).SingleOrDefault();
+                if (enrollmentInDatabase == null)
+                {
+                    context.Enrollments.Add(e);
+                }
             }
             context.SaveChanges();
-
-
         }
     }
 }

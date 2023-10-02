@@ -60,30 +60,44 @@ namespace UniversityRemusLuht.Controllers
             }
             return View(instructor);
         }
+        [HttpGet]
         public IActionResult Create()
         {
+            var instructor = new Instructor();
+            instructor.CourseAssignment = new List<CourseAssignment>();
+            PopulateAssignedCourseData(instructor);
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("HireDate,FirstName,LastName")] Instructor instructor)
+        public async Task<IActionResult> Create([Bind("HireDate,FirstName,LastName,OfficeAssignment")] Instructor instructor, string[] selectedCourses)
         {
-            try
+            ModelState.Remove("OfficeAssignment.Instructor");
+            if (selectedCourses != null)
             {
-                if (ModelState.IsValid)
+                instructor.CourseAssignment = new List<CourseAssignment>();
+                foreach (var course in selectedCourses)
                 {
-                    _context.Add(instructor);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+                    var courseToAdd = new CourseAssignment
+                    {
+                        InstructorID = instructor.ID,
+                        CourseID = int.Parse(course)
+                    };
+                    instructor.CourseAssignment.Add(courseToAdd);
                 }
             }
-            catch (Exception)
+            if (ModelState.IsValid)
             {
-
-                ModelState.AddModelError("", "Unable to save changes. " + "Try again, and if the problem persist " + "see your system administrator.");
+                _context.Add(instructor);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
+            PopulateAssignedCourseData(instructor);
             return View(instructor);
         }
+
+
 
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)

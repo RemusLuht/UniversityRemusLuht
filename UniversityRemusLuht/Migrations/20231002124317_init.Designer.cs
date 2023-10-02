@@ -12,7 +12,7 @@ using UniversityRemusLuht.Data;
 namespace UniversityRemusLuht.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20230915083507_init")]
+    [Migration("20231002124317_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,7 +32,7 @@ namespace UniversityRemusLuht.Migrations
                     b.Property<int>("Credits")
                         .HasColumnType("int");
 
-                    b.Property<int?>("DepartmentID")
+                    b.Property<int>("DepartmentID")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -88,7 +88,7 @@ namespace UniversityRemusLuht.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<byte>("RowVersion")
+                    b.Property<byte?>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tinyint");
@@ -197,21 +197,25 @@ namespace UniversityRemusLuht.Migrations
 
             modelBuilder.Entity("UniversityRemusLuht.Models.Course", b =>
                 {
-                    b.HasOne("UniversityRemusLuht.Models.Department", null)
+                    b.HasOne("UniversityRemusLuht.Models.Department", "Department")
                         .WithMany("Courses")
-                        .HasForeignKey("DepartmentID");
+                        .HasForeignKey("DepartmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("UniversityRemusLuht.Models.CourseAssignment", b =>
                 {
                     b.HasOne("UniversityRemusLuht.Models.Course", "Course")
-                        .WithMany()
+                        .WithMany("CourseAssignments")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("UniversityRemusLuht.Models.Instructor", "Instructor")
-                        .WithMany("CourseAssignments")
+                        .WithMany("CourseAssignment")
                         .HasForeignKey("InstructorID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -262,6 +266,8 @@ namespace UniversityRemusLuht.Migrations
 
             modelBuilder.Entity("UniversityRemusLuht.Models.Course", b =>
                 {
+                    b.Navigation("CourseAssignments");
+
                     b.Navigation("Enrollments");
                 });
 
@@ -272,7 +278,7 @@ namespace UniversityRemusLuht.Migrations
 
             modelBuilder.Entity("UniversityRemusLuht.Models.Instructor", b =>
                 {
-                    b.Navigation("CourseAssignments");
+                    b.Navigation("CourseAssignment");
 
                     b.Navigation("OfficeAssignment")
                         .IsRequired();

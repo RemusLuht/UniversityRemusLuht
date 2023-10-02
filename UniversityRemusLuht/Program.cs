@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using UniversityRemusLuht.Data;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 public class Program
 {
